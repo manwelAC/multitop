@@ -62,7 +62,7 @@
                                         <span class="ms-2">entries</span>
                                     </div>
                                     <div class="col-md-6 d-flex justify-content-end">
-                                        <a href="add-product.html" class="btn btn-primary" id="addNewProductBtn">
+                                        <a href="{{ route('products.create') }}" class="btn btn-primary" id="addNewProductBtn">
                                             <i class='bx bx-plus'></i> Add New Product
                                         </a>
                                     </div>
@@ -78,10 +78,8 @@
                                                 <th>Category</th>
                                                 <th>Stock</th>
                                                 <th>Status</th>
-                                                <th>Special Price</th>
                                                 <th>Regular Price</th>
                                                 <th>Supplier</th>
-
                                                 <th>Created At</th>
                                                 <th style="width: 100px;">Action</th>
                                             </tr>
@@ -219,7 +217,6 @@
     <script src="{{ asset('venton/assets/js/pages/dashboard.js') }}"></script>
     <!-- custom script here -->
     <script>
-    // DOM Elements
     document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const rowsPerPageElement = document.getElementById("entriesSelect");
@@ -240,7 +237,7 @@
     let currentSearchTerm = "";
     let currentProductId = null;
     
-    // API base URL - matches your Laravel API route
+    // API base URL
     const apiBaseUrl = '/api/products';
     
     // CSRF token for secure requests
@@ -252,12 +249,12 @@
         loadingSpinner.classList.remove("d-none");
         currentPage = page;
         currentSearchTerm = search;
-    
+
         let url = `${apiBaseUrl}?page=${page}&per_page=${rowsPerPage}`;
         if (search) {
             url += `&search=${encodeURIComponent(search)}`;
         }
-    
+
         fetch(url, {
             headers: {
                 'Accept': 'application/json',
@@ -268,17 +265,27 @@
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
         })
-        .then(data => {
-            if (data.data.length === 0) {
+        .then(response => {
+            if (!response.success) throw new Error(response.message || 'Failed to load products');
+            
+            const data = response.data;
+            const products = data.data; // The actual product array
+            
+            if (products.length === 0) {
                 showNoResults();
             } else {
-                renderProducts(data.data);
+                renderProducts(products);
             }
-            renderPagination(data);
+            renderPagination({
+                current_page: data.current_page,
+                last_page: data.last_page,
+                per_page: data.per_page,
+                total: data.total
+            });
         })
         .catch(error => {
             console.error('Error fetching products:', error);
-            showError("Failed to load products. Please try again.");
+            showError(error.message || "Failed to load products. Please try again.");
         })
         .finally(() => {
             loadingSpinner.classList.add("d-none");
@@ -294,25 +301,54 @@
     
     // Render product rows
     function renderProducts(products) {
+        tbody.innerHTML = ""; // Clear existing rows
+        
         products.forEach(product => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td>${product.id}</td>
                 <td>${product.name}</td>
-                <td>${product.type === 'Others' ? product.type_other : product.type}</td>
+                <td>${product.type}</td>
                 <td>${product.stock_level}</td>
-                <td><span class="badge rounded-pill ${product.stock_level > 0 ? 'bg-success' : 'bg-danger'}">${product.stock_level > 0 ? 'In Stock' : 'Out of Stock'}</span></td>
-                <td>${product.special_price ? '₱' + parseFloat(product.special_price).toFixed(2) : 'N/A'}</td>
-                <td>₱${parseFloat(product.regular_price || 0).toFixed(2)}</td>
-                <td>${product.supplier ? product.supplier.name : 'N/A'}</td>
-
+                <td>
+                    <span class="badge rounded-pill ${product.stock_level > 0 ? 'bg-success' : 'bg-danger'}">
+                        ${product.stock_level > 0 ? 'In Stock' : 'Out of Stock'}
+                    </span>
+                </td>
+                <td>₱${parseFloat(product.regular_price).toFixed(2)}</td>
+                <td>${product.supplier?.name || 'N/A'}</td>
                 <td>${new Date(product.created_at).toLocaleDateString()}</td>
                 <td>
-                    <a href="javascript:void(0);" class="action-icon edit-btn" title="Edit" data-id="${product.id}"><i class="bx bx-edit"></i></a>
-                    <a href="javascript:void(0);" class="action-icon delete-btn" title="Delete" data-id="${product.id}"><i class="bx bx-trash"></i></a>
+                    <a href="javascript:void(0);" class="action-icon edit-btn" data-id="${product.id}">
+                        <i class="bx bx-edit"></i>
+                    </a>
+                    <a href="javascript:void(0);" class="action-icon delete-btn" data-id="${product.id}">
+                        <i class="bx bx-trash"></i>
+                    </a>
                 </td>
             `;
             tbody.appendChild(tr);
+        });
+        
+        // Reattach event listeners after rendering
+        attachEditDeleteHandlers();
+    }
+    
+    function attachEditDeleteHandlers() {
+        // Edit buttons
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const productId = this.getAttribute('data-id');
+                loadProductForEdit(productId);
+            });
+        });
+        
+        // Delete buttons
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const productId = this.getAttribute('data-id');
+                loadProductForDelete(productId);
+            });
         });
     }
     
@@ -320,7 +356,7 @@
     function renderPagination(data) {
         paginationContainer.innerHTML = "";
         if (data.last_page <= 1) return;
-    
+
         const createPageItem = (page, label, disabled = false, active = false) => {
             const li = document.createElement("li");
             li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
@@ -337,48 +373,47 @@
             li.appendChild(a);
             return li;
         };
-    
+
         // Previous buttons
         paginationContainer.appendChild(createPageItem(1, "«", data.current_page === 1));
         paginationContainer.appendChild(createPageItem(data.current_page - 1, "‹", data.current_page === 1));
-    
+
         // Page numbers
         const maxVisiblePages = 5;
         let startPage = Math.max(1, data.current_page - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(data.last_page, startPage + maxVisiblePages - 1);
-    
+
         if (endPage - startPage + 1 < maxVisiblePages) {
             startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
-    
+
         if (startPage > 1) {
             paginationContainer.appendChild(createPageItem(1, "1"));
             if (startPage > 2) {
-                paginationContainer.appendChild(createDisabledEllipsis());
+                const li = document.createElement("li");
+                li.className = "page-item disabled";
+                li.innerHTML = '<span class="page-link">...</span>';
+                paginationContainer.appendChild(li);
             }
         }
-    
+
         for (let i = startPage; i <= endPage; i++) {
             paginationContainer.appendChild(createPageItem(i, i, false, i === data.current_page));
         }
-    
+
         if (endPage < data.last_page) {
             if (endPage < data.last_page - 1) {
-                paginationContainer.appendChild(createDisabledEllipsis());
+                const li = document.createElement("li");
+                li.className = "page-item disabled";
+                li.innerHTML = '<span class="page-link">...</span>';
+                paginationContainer.appendChild(li);
             }
             paginationContainer.appendChild(createPageItem(data.last_page, data.last_page));
         }
-    
+
         // Next buttons
         paginationContainer.appendChild(createPageItem(data.current_page + 1, "›", data.current_page === data.last_page));
         paginationContainer.appendChild(createPageItem(data.last_page, "»", data.current_page === data.last_page));
-    }
-    
-    function createDisabledEllipsis() {
-        const li = document.createElement("li");
-        li.className = "page-item disabled";
-        li.innerHTML = '<span class="page-link">...</span>';
-        return li;
     }
     
     // Handle search functionality
@@ -398,7 +433,6 @@
         const toastElement = document.getElementById('successToast');
         const toastMessage = document.getElementById("toastMessage");
         
-        // Update toast styling based on error state
         if (isError) {
             toastElement.classList.remove('bg-success');
             toastElement.classList.add('bg-danger');
@@ -415,26 +449,6 @@
         showToast(message, true);
     }
     
-    // Setup edit product functionality
-    function setupEditProduct() {
-        // Edit button click handler
-        document.addEventListener("click", function(e) {
-            if (e.target.closest(".edit-btn")) {
-                const btn = e.target.closest(".edit-btn");
-                currentProductId = parseInt(btn.getAttribute("data-id"));
-                loadProductForEdit(currentProductId);
-            }
-        });
-    
-        // Type selection change handler
-        document.getElementById("editType").addEventListener("change", function() {
-            toggleTypeOtherField(this.value);
-        });
-    
-        // Save edited product
-        document.getElementById("saveEditBtn").addEventListener("click", saveProduct);
-    }
-    
     // Load product data for editing
     function loadProductForEdit(id) {
         fetch(`${apiBaseUrl}/${id}`, {
@@ -447,8 +461,9 @@
             if (!response.ok) throw new Error('Failed to load product');
             return response.json();
         })
-        .then(product => {
-            populateEditForm(product);
+        .then(response => {
+            if (!response.success) throw new Error(response.message);
+            populateEditForm(response.data);
             editModal.show();
         })
         .catch(error => {
@@ -461,32 +476,23 @@
     function populateEditForm(product) {
         document.getElementById("editProductId").value = product.id;
         document.getElementById("editProductName").value = product.name;
-        document.getElementById("editType").value = product.type;
-        document.getElementById("editTypeOther").value = product.type_other || '';
-        document.getElementById("editDescription").value = product.description || '';
-        document.getElementById("editSupplierId").value = product.supplier_id;
-        document.getElementById("editUnitOfMeasure").value = product.unit_of_measure || '';
-        document.getElementById("editStockLevel").value = product.stock_level;
-        document.getElementById("editRegularPrice").value = product.regular_price || '';
-        document.getElementById("editMinimumStockThreshold").value = product.minimum_stock_threshold;
-        
-        toggleTypeOtherField(product.type);
+        document.getElementById("editCategory").value = product.type;
+        document.getElementById("editStock").value = product.stock_level;
+        document.getElementById("editStatus").value = product.stock_level > 0 ? 'In Stock' : 'Out of Stock';
+        document.getElementById("editRegularPrice").value = product.regular_price;
+        document.getElementById("editCreatedAt").value = product.created_at.split('T')[0];
     }
     
     // Save product changes
     function saveProduct() {
         const formData = {
             name: document.getElementById("editProductName").value,
-            type: document.getElementById("editType").value,
-            type_other: document.getElementById("editTypeOther").value,
-            description: document.getElementById("editDescription").value,
-            supplier_id: document.getElementById("editSupplierId").value,
-            unit_of_measure: document.getElementById("editUnitOfMeasure").value,
-            stock_level: document.getElementById("editStockLevel").value,
+            type: document.getElementById("editCategory").value,
+            stock_level: document.getElementById("editStock").value,
             regular_price: document.getElementById("editRegularPrice").value,
-            minimum_stock_threshold: document.getElementById("editMinimumStockThreshold").value
+            created_at: document.getElementById("editCreatedAt").value
         };
-    
+
         fetch(`${apiBaseUrl}/${currentProductId}`, {
             method: 'PUT',
             headers: {
@@ -512,33 +518,6 @@
         });
     }
     
-    // Toggle type other field visibility
-    function toggleTypeOtherField(type) {
-        const typeOtherGroup = document.getElementById("editTypeOtherGroup");
-        if (type === 'Others') {
-            typeOtherGroup.classList.remove("d-none");
-            document.getElementById("editTypeOther").required = true;
-        } else {
-            typeOtherGroup.classList.add("d-none");
-            document.getElementById("editTypeOther").required = false;
-        }
-    }
-    
-    // Setup delete product functionality
-    function setupDeleteProduct() {
-        // Delete button click handler
-        document.addEventListener("click", function(e) {
-            if (e.target.closest(".delete-btn")) {
-                const btn = e.target.closest(".delete-btn");
-                currentProductId = parseInt(btn.getAttribute("data-id"));
-                loadProductForDelete(currentProductId);
-            }
-        });
-    
-        // Confirm delete button
-        document.getElementById("confirmDeleteBtn").addEventListener("click", deleteProduct);
-    }
-    
     // Load product data for deletion confirmation
     function loadProductForDelete(id) {
         fetch(`${apiBaseUrl}/${id}`, {
@@ -551,8 +530,9 @@
             if (!response.ok) throw new Error('Failed to load product');
             return response.json();
         })
-        .then(product => {
-            document.getElementById("deleteProductName").textContent = product.name;
+        .then(response => {
+            if (!response.success) throw new Error(response.message);
+            document.getElementById("deleteProductName").textContent = response.data.name;
             deleteModal.show();
         })
         .catch(error => {
@@ -598,8 +578,12 @@
             if (e.key === "Enter") performSearch();
         });
         rowsPerPageElement.addEventListener("change", handleEntriesChange);
-        setupEditProduct();
-        setupDeleteProduct();
+        
+        // Edit form submission
+        document.getElementById("saveEditBtn").addEventListener("click", saveProduct);
+        
+        // Delete confirmation
+        document.getElementById("confirmDeleteBtn").addEventListener("click", deleteProduct);
     }
     
     // Initialize the application

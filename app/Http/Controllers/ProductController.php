@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -13,49 +13,35 @@ class ProductController extends Controller
      * Display a listing of the products.
      */
     public function index(Request $request)
-    {   
-        $perPage = $request->input('per_page', 10);
-        
-        $query = Product::with(['supplier'])
-            ->latest();
-
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('type', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('supplier', function($q) use ($search) {
-                      $q->where('supplierName', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        // API response
-        if ($request->wantsJson()) {
+    {
+        if ($request->expectsJson() || $request->is('api/*')) {
+            $query = Product::with('supplier')
+                ->orderBy('created_at', 'desc');
+            
+            // Search functionality
+            if ($search = $request->input('search')) {
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('type', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%")
+                      ->orWhereHas('supplier', function($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+            
+            // Pagination
+            $perPage = $request->input('per_page', 10);
             $products = $query->paginate($perPage);
+            
             return response()->json([
-                'data' => $products,
-                'message' => 'Products retrieved successfully'
+                'success' => true,
+                'message' => 'Products fetched successfully',
+                'data' => $products
             ]);
         }
-
-        // Web response
-        $products = $query->paginate($perPage);
         
-        if ($request->ajax()) {
-            return response()->json([
-                'html' => view('partials.product-table', compact('products'))->render(),
-                'pagination' => (string)$products->links('pagination::bootstrap-5')
-            ]);
-        }
-
-        return view('product-list', [
-            'products' => $products,
-            'firstItem' => $products->firstItem(),
-            'lastItem' => $products->lastItem(),
-            'total' => $products->total()
-        ]);
+        return view('product-list');
     }
 
     /**
@@ -67,218 +53,160 @@ class ProductController extends Controller
     }
 
     /**
-     * Store a newly created product in the database.
+     * Store a newly created product in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        // Validate the request
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|string',
-            'type_other' => 'nullable|required_if:type,Others|string|max:255',
-            'description' => 'nullable|string',
-            'supplier_id' => 'required|integer|exists:supplier,id',
-            'unit_of_measure' => 'nullable|string|max:50',
-            'stock_level' => 'nullable|integer|min:0',
-            'regular_price' => 'nullable|numeric|min:0',
-            'special_price' => 'nullable|numeric|min:0',
-            'minimum_stock_threshold' => 'nullable|integer|min:0',
-        ]);
-
         try {
-            // Start database transaction
-            DB::beginTransaction();
-
-            // Create the product
             $product = Product::create([
-                'name' => $validated['name'],
-                'type' => $validated['type'],
-                'type_other' => $validated['type'] === 'Others' ? $validated['type_other'] : null,
-                'description' => $validated['description'] ?? null,
-                'supplier_id' => $validated['supplier_id'],
-                'unit_of_measure' => $validated['unit_of_measure'] ?? null,
-                'stock_level' => $validated['stock_level'] ?? 0,
-                'regular_price' => $validated['regular_price'] ?? null,
-                'special_price' => $validated['special_price'] ?? null,
-                'minimum_stock_threshold' => $validated['minimum_stock_threshold'] ?? 0,
+                'name' => $request->name,
+                'type' => $request->type,
+                'description' => $request->description,
+                'supplier_id' => $request->supplier_id,
+                'unit_of_measure' => $request->unit_of_measure,
+                'stock_level' => $request->stock_level ?? 0,
+                'regular_price' => $request->regular_price,
+                'minimum_stock_threshold' => $request->minimum_stock_threshold,
             ]);
 
-            // Commit the transaction
-            DB::commit();
-
-            // API response
-            if ($request->wantsJson()) {
+            if ($request->expectsJson()) {
                 return response()->json([
-                    'data' => $product,
-                    'message' => 'Product created successfully'
+                    'success' => true,
+                    'message' => 'Product created successfully',
+                    'data' => $product
                 ], 201);
             }
 
-            // Web response
             return redirect()->route('products.index')
-                ->with('success', 'Product "' . $product->name . '" has been successfully added to the database!');
+                ->with('success', 'Product created successfully');
 
         } catch (\Exception $e) {
-            // Rollback the transaction on error
-            DB::rollback();
-            
-            // Log the error for debugging
-            Log::error('Product creation failed: ' . $e->getMessage());
-
-            // API response
-            if ($request->wantsJson()) {
+            if ($request->expectsJson()) {
                 return response()->json([
+                    'success' => false,
                     'message' => 'Failed to create product',
                     'error' => $e->getMessage()
                 ], 500);
             }
 
-            // Web response
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Failed to add product. Please try again.');
+            return back()->withInput()->with('error', 'Failed to create product: ' . $e->getMessage());
         }
     }
 
     /**
      * Display the specified product.
      */
-    public function show(Request $request, Product $product)
+    public function show($id)
     {
-        // API response
-        if ($request->wantsJson()) {
-            return response()->json([
-                'data' => $product->load('supplier'),
-                'message' => 'Product retrieved successfully'
-            ]);
+        try {
+            $product = Product::with('supplier')->findOrFail($id);
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Product fetched successfully',
+                    'data' => $product
+                ]);
+            }
+            
+            return view('product-show', compact('product'));
+            
+        } catch (\Exception $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Product not found',
+                    'error' => $e->getMessage()
+                ], 404);
+            }
+            
+            return back()->with('error', 'Product not found');
         }
-
-        // Web response
-        return view('product-show', compact('product'));
     }
 
     /**
      * Show the form for editing the specified product.
      */
-    public function edit(Product $product)
+    public function edit($id)
     {
+        $product = Product::findOrFail($id);
         return view('product-edit', compact('product'));
     }
 
     /**
-     * Update the specified product in the database.
+     * Update the specified product in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, $id)
     {
-        // Validate the request
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|string',
-            'type_other' => 'nullable|required_if:type,Others|string|max:255',
-            'description' => 'nullable|string',
-            'supplier_id' => 'required|integer|exists:supplier,id',
-            'unit_of_measure' => 'nullable|string|max:50',
-            'stock_level' => 'nullable|integer|min:0',
-            'regular_price' => 'nullable|numeric|min:0',
-            'special_price' => 'nullable|numeric|min:0',
-            'minimum_stock_threshold' => 'nullable|integer|min:0',
-        ]);
-
         try {
-            // Update the product
-            $product->update([
-                'name' => $validated['name'],
-                'type' => $validated['type'],
-                'type_other' => $validated['type'] === 'Others' ? $validated['type_other'] : null,
-                'description' => $validated['description'] ?? null,
-                'supplier_id' => $validated['supplier_id'],
-                'unit_of_measure' => $validated['unit_of_measure'] ?? null,
-                'stock_level' => $validated['stock_level'] ?? 0,
-                'regular_price' => $validated['regular_price'] ?? null,
-                'special_price' => $validated['special_price'] ?? null,
-                'minimum_stock_threshold' => $validated['minimum_stock_threshold'] ?? 0,
+            $product = Product::findOrFail($id);
+            
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'type' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'supplier_id' => 'required|exists:suppliers,id',
+                'unit_of_measure' => 'required|string|max:255',
+                'stock_level' => 'nullable|integer|min:0',
+                'regular_price' => 'required|numeric|min:0',
+                'minimum_stock_threshold' => 'nullable|integer|min:0',
             ]);
-
-            // API response
-            if ($request->wantsJson()) {
+            
+            $product->update($validated);
+            
+            if ($request->expectsJson()) {
                 return response()->json([
-                    'data' => $product,
-                    'message' => 'Product updated successfully'
+                    'success' => true,
+                    'message' => 'Product updated successfully',
+                    'data' => $product
                 ]);
             }
-
-            // Web response
-            return redirect()->route('products.index')
-                ->with('success', 'Product updated successfully!');
-
-        } catch (\Exception $e) {
-            Log::error('Product update failed: ' . $e->getMessage());
             
-            // API response
-            if ($request->wantsJson()) {
+            return redirect()->route('products.index')
+                ->with('success', 'Product updated successfully');
+                
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
                 return response()->json([
+                    'success' => false,
                     'message' => 'Failed to update product',
                     'error' => $e->getMessage()
                 ], 500);
             }
-
-            // Web response
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Failed to update product. Please try again.');
+            
+            return back()->withInput()->with('error', 'Failed to update product');
         }
     }
 
     /**
-     * Remove the specified product from the database.
+     * Remove the specified product from storage.
      */
-    public function destroy(Request $request, Product $product)
+    public function destroy($id)
     {
         try {
-            $productName = $product->name;
+            $product = Product::findOrFail($id);
             $product->delete();
             
-            // API response
-            if ($request->wantsJson()) {
+            if (request()->expectsJson()) {
                 return response()->json([
+                    'success' => true,
                     'message' => 'Product deleted successfully'
                 ]);
             }
             
-            // AJAX response (for web)
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Product "' . $productName . '" has been deleted successfully!'
-                ]);
-            }
-            
-            // Web response
             return redirect()->route('products.index')
-                ->with('success', 'Product "' . $productName . '" has been deleted successfully!');
+                ->with('success', 'Product deleted successfully');
                 
         } catch (\Exception $e) {
-            Log::error('Product deletion failed: ' . $e->getMessage());
-            
-            // API response
-            if ($request->wantsJson()) {
+            if (request()->expectsJson()) {
                 return response()->json([
+                    'success' => false,
                     'message' => 'Failed to delete product',
                     'error' => $e->getMessage()
                 ], 500);
             }
             
-            // AJAX response (for web)
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to delete product. Please try again.'
-                ], 500);
-            }
-            
-            // Web response
-            return redirect()->back()
-                ->with('error', 'Failed to delete product. Please try again.');
+            return back()->with('error', 'Failed to delete product');
         }
     }
 }
