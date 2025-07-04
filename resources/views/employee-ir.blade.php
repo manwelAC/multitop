@@ -6,6 +6,7 @@
 <head>
      <!-- Title Meta -->
      <meta charset="utf-8" />
+     <meta name="csrf-token" content="{{ csrf_token() }}">
      <title>Dashboard</title>
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <meta name="description" content="A fully responsive premium admin dashboard template" />
@@ -61,7 +62,7 @@
                                         <span class="ms-2">entries</span>
                                     </div>
                                     <div class="col-md-6 d-flex justify-content-end">
-                                        <a href="add-employee.html" class="btn btn-primary">
+                                        <a href="/add-employee" class="btn btn-primary">
                                             <i class='bx bx-plus'></i> Add New Employee
                                         </a>
                                     </div>

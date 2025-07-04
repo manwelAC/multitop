@@ -7,6 +7,7 @@ use App\Http\Controllers\CustomerController;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\EmployeeController;
 
 // Test route for API
 Route::get('/test-api', function() {
@@ -137,6 +138,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/customers/{customer}', [CustomerController::class, 'show']);
     Route::put('/api/customers/{customer}', [CustomerController::class, 'update']);
     Route::delete('/api/customers/{customer}', [CustomerController::class, 'destroy']);
+
+    // Employee routes
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+    Route::get('/api/employees', [EmployeeController::class, 'getEmployees'])->name('employees.get');
+    Route::post('/api/employees', [EmployeeController::class, 'store'])->name('employees.store');
+    Route::put('/api/employees/{id}', [EmployeeController::class, 'update'])->name('employees.update');
+    Route::delete('/api/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
 });
 
 // Customer Routes
