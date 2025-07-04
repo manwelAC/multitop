@@ -41,6 +41,26 @@
                          </li>
 
                          <li class="nav-item">
+                              <a class="nav-link menu-arrow" href="#sidebarSales" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarOrders">
+                                   <span class="nav-icon">
+                                        <iconify-icon icon="solar:ticket-sale-broken"></iconify-icon>
+                                   </span>
+                                   <span class="nav-text"> Sales Order </span>
+                              </a>
+                              <div class="collapse" id="sidebarSales">
+                                   <ul class="nav sub-navbar-nav">
+
+                                        <li class="sub-nav-item">
+                                             <a class="sub-nav-link" href="/list-sales">Order List</a>    
+                                        </li>
+                                        <li class="sub-nav-item">
+                                             <a class="sub-nav-link" href="/add-sales">Add Order</a>
+                                        </li>
+                                   </ul>
+                              </div>
+                         </li>
+
+                         <li class="nav-item">
                               <a class="nav-link menu-arrow" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
                                    <span class="nav-icon">
                                         <iconify-icon icon="solar:user-rounded-broken"></iconify-icon>
@@ -203,25 +223,7 @@
                               </div>
                          </li>
 
-                         <li class="nav-item">
-                              <a class="nav-link menu-arrow" href="#sidebarSales" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarOrders">
-                                   <span class="nav-icon">
-                                        <iconify-icon icon="solar:ticket-sale-broken"></iconify-icon>
-                                   </span>
-                                   <span class="nav-text"> Sales Order </span>
-                              </a>
-                              <div class="collapse" id="sidebarSales">
-                                   <ul class="nav sub-navbar-nav">
-
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="/list-sales">Order List</a>    
-                                        </li>
-                                        <li class="sub-nav-item">
-                                             <a class="sub-nav-link" href="/add-sales">Add Order</a>
-                                        </li>
-                                   </ul>
-                              </div>
-                         </li>
+                         
                          <hr>
                          <li class="nav-item">
                          <!-- Logout Form -->

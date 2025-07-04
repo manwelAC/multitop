@@ -9,25 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('products', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('type');
-            $table->string('type_other')->nullable(); // For when "Others" is selected
-            $table->text('description')->nullable();
-            $table->unsignedBigInteger('supplier_id');
-            $table->string('unit_of_measure')->nullable();
-            $table->integer('stock_level')->default(0);
-            $table->decimal('regular_price', 10, 2)->nullable();
-            $table->integer('minimum_stock_threshold')->default(0);
-            $table->timestamps();
-            
-            // You can add foreign key constraint if suppliers table exists
-            // $table->foreign('supplier_id')->references('id')->on('suppliers');
-        });
-    }
+    public function up()
+{
+    Schema::create('products', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->string('type');
+        $table->text('description')->nullable();
+        $table->foreignId('supplier_id')->constrained();
+        $table->string('unit_of_measure');
+        $table->integer('stock_level')->default(0);
+        $table->decimal('regular_price', 10, 2);
+        $table->integer('minimum_stock_threshold')->nullable();
+        $table->timestamps();
+    });
+}
 
     /**
      * Reverse the migrations.
