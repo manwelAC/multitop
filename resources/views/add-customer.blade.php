@@ -168,6 +168,58 @@
                                                   </select>
                                              </div>
 
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                       <h5 class="mb-3">Bank Account Information</h5>
+                                              </div>
+    
+    <!-- Primary Bank Account (Left Column) -->
+                                               <div class="col-md-6">
+                                                     <div class="card mb-3">
+                                                               <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">Primary Bank Account (Required)</h6>
+                                               </div>
+                                               <div class="card-body">
+                                                         <div class="mb-3">
+                                                               <label for="account_name_1" class="form-label">Account Name</label>
+                                                                <input type="text" class="form-control" id="account_name_1" name="account_name_1" required>
+                                               </div>
+                                                <div class="mb-3">
+                                                               <label for="bank_account_1" class="form-label">Account Number</label>
+                                                               <input type="text" class="form-control" id="bank_account_1" name="bank_account_1" required>
+                                                </div>
+                                               <div class="mb-3">
+                                                              <label for="bank_branch_1" class="form-label">Bank Branch</label>
+                                                             <input type="text" class="form-control" id="bank_branch_1" name="bank_branch_1" required>
+                                               </div>
+                                         </div>
+                                   </div>
+                            </div>
+    
+    <!-- Secondary Bank Account (Right Column) -->
+                                              <div class="col-md-6">
+                                                     <div class="card mb-3">
+                                                         <div class="card-header bg-light">
+                                                      <h6 class="mb-0">Secondary Bank Account (Optional)</h6>
+                                              </div>
+                                             <div class="card-body">
+                                                        <div class="mb-3">
+                                                               <label for="account_name_2" class="form-label">Account Name</label>
+                                                               <input type="text" class="form-control" id="account_name_2" name="account_name_2">
+                                             </div>
+                                              <div class="mb-3">
+                                                    <label for="bank_account_2" class="form-label">Account Number</label>
+                                                    <input type="text" class="form-control" id="bank_account_2" name="bank_account_2">
+                                              </div>
+                                             <div class="mb-3">
+                                                    <label for="bank_branch_2" class="form-label">Bank Branch</label>
+                                                    <input type="text" class="form-control" id="bank_branch_2" name="bank_branch_2">
+                                              </div>
+                                     </div>
+                               </div>
+                         </div>
+                       </div>
+
                                              <!-- Submit Buttons -->
                                              <div class="col-md-12 d-flex justify-content-end gap-2 mt-4">
                                                   <button type="button" class="btn btn-secondary me-1" onclick="window.location.href='{{ url('/customer-list') }}'">Cancel</button>
