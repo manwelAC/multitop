@@ -210,6 +210,59 @@
                                              <input type="text" class="form-control" id="editWarehouseAddress">
                                         </div>
                                         </div>
+
+                                        <div class="row mt-3">
+    <div class="col-12">
+        <h5 class="mb-3">Bank Accounts</h5>
+    </div>
+    
+    <!-- Primary Bank Account -->
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Primary Bank Account</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="editAccountName1" class="form-label">Account Name</label>
+                    <input type="text" class="form-control" id="editAccountName1">
+                </div>
+                <div class="mb-3">
+                    <label for="editBankAccount1" class="form-label">Account Number</label>
+                    <input type="text" class="form-control" id="editBankAccount1">
+                </div>
+                <div class="mb-3">
+                    <label for="editBankBranch1" class="form-label">Bank Branch</label>
+                    <input type="text" class="form-control" id="editBankBranch1">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Secondary Bank Account -->
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Secondary Bank Account</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="editAccountName2" class="form-label">Account Name</label>
+                    <input type="text" class="form-control" id="editAccountName2">
+                </div>
+                <div class="mb-3">
+                    <label for="editBankAccount2" class="form-label">Account Number</label>
+                    <input type="text" class="form-control" id="editBankAccount2">
+                </div>
+                <div class="mb-3">
+                    <label for="editBankBranch2" class="form-label">Bank Branch</label>
+                    <input type="text" class="form-control" id="editBankBranch2">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
                                         
                                         <!-- Product Pricing Section -->
                                         <div class="row mt-4">
