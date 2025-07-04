@@ -57,35 +57,12 @@
                                                 <input type="text" class="form-control" id="supplierName" name="supplierName" required>
                                             </div>
 
-                                            <!-- Item -->
-                                            <div class="col-md-6 mb-3">
-                                                <label for="item" class="form-label">Item</label>
-                                                <input type="text" class="form-control" id="item" name="item" placeholder="e.g., Oil, Plastic Bottle" required>
-                                            </div>
-
-                                            <!-- Qty -->
-                                            <div class="col-md-6 mb-3">
-                                                <label for="qty" class="form-label">Quantity</label>
-                                                <input type="number" min="0" class="form-control" id="qty" name="qty" placeholder="Enter quantity" required>
-                                            </div>
-
                                             <!-- Net Qty -->
                                             <div class="col-md-6 mb-3">
                                                 <label for="netQty" class="form-label">Net Quantity</label>
                                                 <input type="number" min="0" class="form-control" id="netQty" name="netQty" placeholder="Net quantity" required>
                                             </div>
 
-                                            <!-- Unit of Measure -->
-                                            <div class="col-md-6 mb-3">
-                                                <label for="unitOfMeasure" class="form-label">Unit of Measure</label>
-                                                <select class="form-select" id="unitOfMeasure" name="unitofmeasure" required>
-                                                    <option selected disabled>Select unit</option>
-                                                    <option value="Units">Units</option>
-                                                    <option value="Kilos">Kilos</option>
-                                                    <option value="Liters">Liters</option>
-                                                    <option value="Boxes">Boxes</option>
-                                                </select>
-                                            </div>
 
                                             <!-- Date In -->
                                             <div class="col-md-6 mb-3">

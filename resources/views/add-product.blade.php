@@ -11,6 +11,7 @@
      <meta name="description" content="A fully responsive premium admin dashboard template" />
      <meta name="author" content="Techzaa" />
      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+     <meta name="csrf-token" content="{{ csrf_token() }}">
 
      <!-- App favicon -->
      <link rel="shortcut icon" href="{{ asset('venton/assets/images/favicon.ico') }}">
@@ -116,6 +117,10 @@
                                                   <option value="Ream">Ream</option>
                                                   <option value="Pack">Pack</option>
                                                   <option value="Sack">Sack</option>
+                                                  <option value="Gallon">Gallon</option>
+                                                  <option value="Case">Case</option>
+                                                  <option value="Bundle">Bundle</option>
+                                                  <option value="Pcs">Pcs</option>
                                              </select>
                                         </div>
                                         
@@ -124,12 +129,6 @@
                                              <label for="stockLevel" class="form-label">Stock Level</label>
                                              <input type="number" class="form-control" id="stockLevel" name="stock_level" placeholder="Current stock quantity">
 
-                                        </div>
-
-                                        <!-- Special Price Per Unit -->
-                                        <div class="col-md-6 mb-3">
-                                             <label for="specialPricePerUnit" class="form-label">Special Price Per Unit</label>
-                                             <input type="number" step="0.01" class="form-control" id="specialPricePerUnit" name="special_price" placeholder="e.g., 40.00">
                                         </div>
 
                                         <!-- Regular Price Per Unit -->
@@ -173,16 +172,53 @@
     <script src="{{ asset('venton/assets/js/pages/dashboard.js') }}"></script>
     <!-- custom script here -->
     <script>
-    const productTypeSelect = document.getElementById('productType');
-    const otherProductTypeContainer = document.getElementById('otherProductTypeContainer');
+    document.querySelector('form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+    submitBtn.disabled = true;
 
-    productTypeSelect.addEventListener('change', function () {
-        if (this.value === 'Others') {
-            otherProductTypeContainer.style.display = 'block';
-        } else {
-            otherProductTypeContainer.style.display = 'none';
+    try {
+        const formData = new FormData(this);
+        
+        // Handle the case when "Others" is selected
+        if (formData.get('type') === 'Others') {
+            formData.set('type', formData.get('type_other'));
+            if (!formData.get('type')) {
+                throw new Error('Please specify the product type');
+            }
         }
-    });
+        formData.delete('type_other');
+        
+        const response = await fetch("{{ route('products.store') }}", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData  // Send FormData directly
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to create product');
+        }
+
+        // Redirect to products list
+        window.location.href = "{{ route('products.index') }}";
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert(error.message || 'An error occurred while saving the product');
+    } finally {
+        // Restore button state
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    }
+});
 </script>
      
 

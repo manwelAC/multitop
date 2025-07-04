@@ -51,11 +51,6 @@ Route::middleware(['auth'])->group(function () {
     
     // Product Routes (using resource controller)
     Route::resource('products', ProductController::class);
-
-    // Other Routes
-    Route::get('/product-list', function() {
-        return view('product-list');
-    });
     Route::get('/customer-list', function() {
         return view('customer-list');
     });
