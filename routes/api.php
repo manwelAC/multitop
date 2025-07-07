@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\ProductInventoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,4 +36,9 @@ Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy']);
 
 Route::apiResource('products', ProductController::class);
 
+Route::prefix('inventory')->group(function () {
+    Route::get('/products', [ProductInventoryController::class, 'index']);
+    Route::get('/stock/{product}', [ProductInventoryController::class, 'getStock']);
+    Route::post('/update', [ProductInventoryController::class, 'updateStock']);
+});
 ?>

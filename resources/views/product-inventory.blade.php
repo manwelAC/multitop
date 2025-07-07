@@ -11,7 +11,7 @@
      <meta name="description" content="A fully responsive premium admin dashboard template" />
      <meta name="author" content="Techzaa" />
      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
      <!-- App favicon -->
      <link rel="shortcut icon" href="{{ asset('venton/assets/images/favicon.ico') }}">
 
@@ -122,20 +122,47 @@
 var toastEl = document.getElementById('orderSuccessToast');
 var toast = new bootstrap.Toast(toastEl);
 
-// Product data - in a real app this would come from a database
-const productData = {
-    "1": { name: "Product 1", beginning_qty: 20 },
-    "2": { name: "Product 2", beginning_qty: 56 },
-    "3": { name: "Product 3", beginning_qty: 15 }
-};
+// Load products when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/inventory/products')
+        .then(response => response.json())
+        .then(products => {
+            const select = document.getElementById('product');
+            
+            // Clear existing options except the first one
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // Add new options
+            products.forEach(product => {
+                const option = new Option(product.name, product.id);
+                option.setAttribute('data-beginning-qty', product.beginning_qty);
+                select.add(option);
+            });
+        })
+        .catch(error => console.error('Error loading products:', error));
+});
 
 // When product selection changes
 document.getElementById('product').addEventListener('change', function() {
     const productId = this.value;
     
-    if (productId && productData[productId]) {
-        document.getElementById('beginning_qty').value = productData[productId].beginning_qty;
-        calculateCurrentQty();
+    if (productId) {
+        // Fetch current stock from API
+        fetch(`/api/inventory/stock/${productId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('beginning_qty').value = data.beginning_qty;
+                calculateCurrentQty();
+            })
+            .catch(error => {
+                console.error('Error fetching stock:', error);
+                document.getElementById('beginning_qty').value = '';
+            });
+    } else {
+        document.getElementById('beginning_qty').value = '';
+        document.getElementById('current_qty').value = '';
     }
 });
 
@@ -152,26 +179,52 @@ function calculateCurrentQty() {
 document.getElementById('inventoryForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // Get form values
     const productSelect = document.getElementById('product');
     const productId = productSelect.value;
     const productName = productSelect.options[productSelect.selectedIndex].text;
-    const currentQty = document.getElementById('current_qty').value;
+    const newStock = document.getElementById('new_stock').value;
     
-    // Here you would typically send the data to server via AJAX
-    // For demo, we'll just show the toast and refresh
-    document.getElementById('orderToastMessage').textContent = 
-        `${productName} stock updated to ${currentQty}`;
-    toast.show();
+    if (!productId) {
+        alert('Please select a product');
+        return;
+    }
     
-    // Reset form and refresh after 1 second
-    setTimeout(() => {
-        document.getElementById('inventoryForm').reset();
-        document.getElementById('beginning_qty').value = '';
-        document.getElementById('current_qty').value = '';
-        // In a real app, you might want to reload data from server instead
-        location.reload();
-    }, 1000);
+    fetch('/api/inventory/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            new_stock: newStock
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('orderToastMessage').textContent = 
+                `${productName} stock updated to ${data.current_qty}`;
+            toast.show();
+            
+            // Reset form after 1 second
+            setTimeout(() => {
+                document.getElementById('inventoryForm').reset();
+                document.getElementById('beginning_qty').value = '';
+                document.getElementById('current_qty').value = '';
+                
+                // Update the beginning quantity in the dropdown
+                const selectedOption = productSelect.options[productSelect.selectedIndex];
+                selectedOption.setAttribute('data-beginning-qty', data.current_qty);
+            }, 1000);
+        } else {
+            alert('Failed to update stock: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating stock');
+    });
 });
 </script>
 
