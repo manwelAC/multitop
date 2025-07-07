@@ -75,11 +75,13 @@
                                             <tr>
                                                 <th>Product ID</th>
                                                 <th>Product Name</th>
+                                                <th>Description</th>
                                                 <th>Category</th>
                                                 <th>Stock</th>
                                                 <th>Status</th>
                                                 <th>Regular Price</th>
                                                 <th>Supplier</th>
+                                                <th>Unit of Measure</th>
                                                 <th>Created At</th>
                                                 <th style="width: 100px;">Action</th>
                                             </tr>
@@ -123,41 +125,56 @@
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="editCategory" class="form-label">Category</label>
-                                            <input type="text" class="form-control" id="editCategory" required>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="editStock" class="form-label">Stock</label>
-                                            <input type="number" class="form-control" id="editStock" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="editStatus" class="form-label">Status</label>
-                                            <select class="form-select" id="editStatus" required>
-                                                <option value="In Stock">In Stock</option>
-                                                <option value="Out of Stock">Out of Stock</option>
+                                            <select class="form-select" id="editCategory" required>
+                                                <option value="Oil">Oil</option>
+                                                <option value="Bottle">Bottle</option>
+                                                <option value="Packaging">Packaging</option>
+                                                <option value="Spring">Spring</option>
+                                                <option value="Plastic">Plastic</option>
+                                                <option value="Water">Water</option>
+                                                <option value="Dishwashing Liquid">Dishwashing Liquid</option>
+                                                <option value="Styro">Styro</option>
+                                                <option value="Others">Others</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label for="editSpecialPrice" class="form-label">Special Price</label>
-                                            <input type="number" step="0.01" class="form-control" id="editSpecialPrice" name="special_price">
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="editRegularPrice" class="form-label">Regular Price</label>
-                                            <input type="number" step="0.01" class="form-control" id="editRegularPrice" name="regular_price" required>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="editOriginalPrice" class="form-label">Original Price</label>
-                                            <input type="number" step="0.01" class="form-control" id="editOriginalPrice" name="original_price">
+                                        <div class="col-12 mb-3">
+                                            <label for="editDescription" class="form-label">Description</label>
+                                            <textarea class="form-control" id="editDescription" rows="3"></textarea>
                                         </div>
                                     </div>
-
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="editCreatedAt" class="form-label">Created At</label>
-                                            <input type="date" class="form-control" id="editCreatedAt" required>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="editRegularPrice" class="form-label">Regular Price</label>
+                                            <input type="number" step="0.01" class="form-control" id="editRegularPrice" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="editSupplier" class="form-label">Supplier</label>
+                                            <select class="form-select" id="editSupplier" required>
+                                                <option value="1">Supplier 1</option>
+                                                <option value="2">Supplier 2</option>
+                                                <option value="3">Supplier 3</option>
+                                                <option value="4">Supplier 4</option>
+                                                <option value="5">Supplier 5</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="editUnitOfMeasure" class="form-label">Unit of Measure</label>
+                                            <select class="form-select" id="editUnitOfMeasure" required>
+                                                <option value="">Select unit</option>
+                                                <option value="Kilos">Kilos</option>
+                                                <option value="Liters">Liters</option>
+                                                <option value="Boxes">Boxes</option>
+                                                <option value="Bag">Bag</option>
+                                                <option value="Ream">Ream</option>
+                                                <option value="Pack">Pack</option>
+                                                <option value="Sack">Sack</option>
+                                                <option value="Gallon">Gallon</option>
+                                                <option value="Case">Case</option>
+                                                <option value="Bundle">Bundle</option>
+                                                <option value="Pcs">Pcs</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </form>
@@ -169,18 +186,17 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Delete Modal -->
-                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <!-- Delete Confirmation Modal -->
+                <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="deleteModalLabel">Delete Product</h5>
+                                <h5 class="modal-title">Confirm Deletion</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                Are you sure you want to delete <strong id="deleteProductName"></strong>?
-                                <p class="text-danger mt-2">This action cannot be undone.</p>
+                                <p>Are you sure you want to delete <strong id="deleteProductName"></strong>?</p>
+                                <p class="text-danger">This action cannot be undone!</p>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -301,38 +317,47 @@
     
     // Render product rows
     function renderProducts(products) {
-        tbody.innerHTML = ""; // Clear existing rows
-        
-        products.forEach(product => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${product.id}</td>
-                <td>${product.name}</td>
-                <td>${product.type}</td>
-                <td>${product.stock_level}</td>
-                <td>
-                    <span class="badge rounded-pill ${product.stock_level > 0 ? 'bg-success' : 'bg-danger'}">
-                        ${product.stock_level > 0 ? 'In Stock' : 'Out of Stock'}
-                    </span>
-                </td>
-                <td>₱${parseFloat(product.regular_price).toFixed(2)}</td>
-                <td>${product.supplier?.name || 'N/A'}</td>
-                <td>${new Date(product.created_at).toLocaleDateString()}</td>
-                <td>
-                    <a href="javascript:void(0);" class="action-icon edit-btn" data-id="${product.id}">
-                        <i class="bx bx-edit"></i>
-                    </a>
-                    <a href="javascript:void(0);" class="action-icon delete-btn" data-id="${product.id}">
-                        <i class="bx bx-trash"></i>
-                    </a>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-        
-        // Reattach event listeners after rendering
-        attachEditDeleteHandlers();
-    }
+    tbody.innerHTML = ""; // Clear existing rows
+    
+    products.forEach(product => {
+        const tr = document.createElement("tr");
+        // Truncate description if too long
+        const shortDescription = product.description 
+            ? product.description.length > 50 
+                ? product.description.substring(0, 50) + '...' 
+                : product.description
+            : 'N/A';
+            
+        tr.innerHTML = `
+            <td>${product.id}</td>
+            <td>${product.name}</td>
+            <td title="${product.description || ''}">${shortDescription}</td>
+            <td>${product.type}</td>
+            <td>${product.stock_level}</td>
+            <td>
+                <span class="badge rounded-pill ${product.stock_level > 0 ? 'bg-success' : 'bg-danger'}">
+                    ${product.stock_level > 0 ? 'In Stock' : 'Out of Stock'}
+                </span>
+            </td>
+            <td>₱${parseFloat(product.regular_price).toFixed(2)}</td>
+            <td>${product.supplier?.name || 'N/A'}</td>
+            <td>${product.unit_of_measure}</td>
+            <td>${new Date(product.created_at).toLocaleDateString()}</td>
+            <td>
+                <a href="javascript:void(0);" class="action-icon edit-btn" data-id="${product.id}">
+                    <i class="bx bx-edit"></i>
+                </a>
+                <a href="javascript:void(0);" class="action-icon delete-btn" data-id="${product.id}">
+                    <i class="bx bx-trash"></i>
+                </a>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    // Reattach event listeners after rendering
+    attachEditDeleteHandlers();
+}
     
     function attachEditDeleteHandlers() {
         // Edit buttons
@@ -451,125 +476,143 @@
     
     // Load product data for editing
     function loadProductForEdit(id) {
-        fetch(`${apiBaseUrl}/${id}`, {
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to load product');
-            return response.json();
-        })
-        .then(response => {
-            if (!response.success) throw new Error(response.message);
-            populateEditForm(response.data);
-            editModal.show();
-        })
-        .catch(error => {
-            console.error('Error fetching product:', error);
-            showError("Failed to load product details. Please try again.");
-        });
-    }
+    currentProductId = id; // Add this line to store the product ID
+    fetch(`${apiBaseUrl}/${id}`, {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to load product');
+        return response.json();
+    })
+    .then(response => {
+        if (!response.success) throw new Error(response.message);
+        populateEditForm(response.data);
+        editModal.show();
+    })
+    .catch(error => {
+        console.error('Error fetching product:', error);
+        showError("Failed to load product details. Please try again.");
+    });
+}
     
     // Populate edit form with product data
     function populateEditForm(product) {
-        document.getElementById("editProductId").value = product.id;
-        document.getElementById("editProductName").value = product.name;
-        document.getElementById("editCategory").value = product.type;
-        document.getElementById("editStock").value = product.stock_level;
-        document.getElementById("editStatus").value = product.stock_level > 0 ? 'In Stock' : 'Out of Stock';
-        document.getElementById("editRegularPrice").value = product.regular_price;
-        document.getElementById("editCreatedAt").value = product.created_at.split('T')[0];
-    }
+    document.getElementById("editProductId").value = product.id;
+    document.getElementById("editProductName").value = product.name;
+    document.getElementById("editDescription").value = product.description || '';
+    document.getElementById("editCategory").value = product.type;
+    document.getElementById("editRegularPrice").value = product.regular_price;
+    document.getElementById("editSupplier").value = product.supplier_id;
+    document.getElementById("editUnitOfMeasure").value = product.unit_of_measure;
+}
     
     // Save product changes
     function saveProduct() {
-        const formData = {
-            name: document.getElementById("editProductName").value,
-            type: document.getElementById("editCategory").value,
-            stock_level: document.getElementById("editStock").value,
-            regular_price: document.getElementById("editRegularPrice").value,
-            created_at: document.getElementById("editCreatedAt").value
-        };
+    const formData = {
+        name: document.getElementById("editProductName").value,
+        type: document.getElementById("editCategory").value,
+        description: document.getElementById("editDescription").value,
+        supplier_id: document.getElementById("editSupplier").value,
+        unit_of_measure: document.getElementById("editUnitOfMeasure").value,
+        regular_price: document.getElementById("editRegularPrice").value,
+        // Add these if they exist in your form:
+        // stock_level: document.getElementById("editStockLevel")?.value,
+        // minimum_stock_threshold: document.getElementById("editMinStockThreshold")?.value
+    };
 
-        fetch(`${apiBaseUrl}/${currentProductId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.ok) return response.json().then(err => { throw err; });
-            return response.json();
-        })
-        .then(() => {
-            showPage(currentPage, currentSearchTerm);
-            showToast("Product updated successfully!");
-            editModal.hide();
-        })
-        .catch(error => {
-            console.error('Error updating product:', error);
-            showError(error.message || "Failed to update product. Please try again.");
-        });
-    }
+    fetch(`${apiBaseUrl}/${currentProductId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        if (!response.ok) return response.json().then(err => { throw err; });
+        return response.json();
+    })
+    .then(data => {
+        showPage(currentPage, currentSearchTerm);
+        showToast("Product updated successfully!");
+        editModal.hide();
+    })
+    .catch(error => {
+        console.error('Error updating product:', error);
+        showError(error.message || "Failed to update product. Please try again.");
+    });
+}
     
     // Load product data for deletion confirmation
     function loadProductForDelete(id) {
-        fetch(`${apiBaseUrl}/${id}`, {
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to load product');
-            return response.json();
-        })
-        .then(response => {
-            if (!response.success) throw new Error(response.message);
-            document.getElementById("deleteProductName").textContent = response.data.name;
-            deleteModal.show();
-        })
-        .catch(error => {
-            console.error('Error fetching product:', error);
-            showError("Failed to load product details. Please try again.");
-        });
-    }
+    currentProductId = id; // This is crucial - sets the ID for deletion
+    fetch(`${apiBaseUrl}/${id}`, {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to load product');
+        return response.json();
+    })
+    .then(response => {
+        if (!response.success) throw new Error(response.message);
+        document.getElementById("deleteProductName").textContent = response.data.name;
+        deleteModal.show();
+    })
+    .catch(error => {
+        console.error('Error fetching product:', error);
+        showError("Failed to load product details. Please try again.");
+        currentProductId = null; // Reset if there's an error
+    });
+}
     
     // Delete product
-    function deleteProduct() {
-        fetch(`${apiBaseUrl}/${currentProductId}`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken
-            }
-        })
-        .then(response => {
-            if (!response.ok) return response.json().then(err => { throw err; });
-            return response.json();
-        })
-        .then(() => {
-            // Adjust page if we deleted the last item on the current page
-            const newPage = tbody.children.length === 1 && currentPage > 1 
-                ? currentPage - 1 
-                : currentPage;
-                
-            showPage(newPage, currentSearchTerm);
-            showToast("Product deleted successfully!");
-            deleteModal.hide();
-        })
-        .catch(error => {
-            console.error('Error deleting product:', error);
-            showError(error.message || "Failed to delete product. Please try again.");
-        });
+function deleteProduct() {
+    if (!currentProductId) {
+        showError("No product selected for deletion");
+        return;
     }
+
+    fetch(`${apiBaseUrl}/${currentProductId}`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { 
+                throw new Error(err.message || 'Failed to delete product');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Adjust page if we deleted the last item on the current page
+        const newPage = tbody.children.length === 1 && currentPage > 1 
+            ? currentPage - 1 
+            : currentPage;
+            
+        showPage(newPage, currentSearchTerm);
+        showToast("Product deleted successfully!");
+        deleteModal.hide();
+        currentProductId = null; // Reset after deletion
+    })
+    .catch(error => {
+        console.error('Error deleting product:', error);
+        showError(error.message || "Failed to delete product. Please try again.");
+        deleteModal.hide();
+    });
+}
     
     // Initialize event listeners
     function initEventListeners() {
@@ -584,6 +627,9 @@
         
         // Delete confirmation
         document.getElementById("confirmDeleteBtn").addEventListener("click", deleteProduct);
+        document.getElementById('deleteModal').addEventListener('hidden.bs.modal', function() {
+        currentProductId = null;
+    });
     }
     
     // Initialize the application
